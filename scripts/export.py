@@ -17,7 +17,6 @@ parser.add_argument("url", help="URL of the goo blog article to export")
 args = parser.parse_args()
 
 ARTICLE_URL = args.url
-BASE_ARTICLE_URL = "https://blog.goo.ne.jp/tsakamot2001/e/"
 
 # === 保存先 ===
 SAVE_DIR = "exported_blog"
@@ -33,6 +32,22 @@ title = title_tag.get_text(strip=True) if title_tag else "Untitled"
 
 date_tag = soup.select_one("span.entry-top-info-time")
 date = date_tag.get_text(strip=True) if date_tag else "Unknown Date"
+
+# === カテゴリ情報の抽出 ===
+category_tag = soup.select_one("span.entry-top-info-category")
+category_text = category_tag.get_text(strip=True) if category_tag else "No Category"
+
+category_link_id = ""
+if category_tag:
+    if category_tag.parent.name == "a" and category_tag.parent.has_attr("href"):
+        full_link = category_tag.parent["href"]
+    else:
+        prev_a = category_tag.find_previous("a", href=True)
+        full_link = prev_a["href"] if prev_a else ""
+    if full_link.startswith("/tsakamot2001/"):
+        # ベースパスを取り除いて、残りを / を削除して結合
+        remaining_path = full_link.replace("/tsakamot2001/", "")
+        category_link_id = remaining_path.replace("/", "")  # 例: 'c/xxxx' → 'cxxxx'
 
 # === 本文 ===
 def convert_internal_links(body_tag):
@@ -130,6 +145,7 @@ md_filename = os.path.join(SAVE_DIR, f"{post_id}.md")
 with open(md_filename, "w", encoding="utf-8") as f:
     f.write(f"# {title}\n\n")
     f.write(f"📅 投稿日時: {date}\n\n")
+    f.write(f"🏷️ カテゴリ: [{category_text}]({category_link_id}.md)\n\n")
     f.write(markdown_body)
 
     if comment_blocks:
