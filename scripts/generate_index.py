@@ -1,15 +1,16 @@
 import os
 import re
+import fnmatch
 from datetime import datetime
 
-SAVE_DIR = "exported_blog"
-README_PATH = os.path.join(SAVE_DIR, "README.md")
+SAVE_DIR = ".."
+OFNAME_PATH = os.path.join(SAVE_DIR, "ARTICLES.md")
 
 entries = []
 
 # === Markdown ファイルを走査 ===
 for filename in os.listdir(SAVE_DIR):
-    if not filename.endswith(".md") or filename == "README.md":
+    if not fnmatch.fnmatch(filename, "e*.md"):
         continue
 
     filepath = os.path.join(SAVE_DIR, filename)
@@ -39,11 +40,11 @@ for filename in os.listdir(SAVE_DIR):
 # === 投稿日時でソート ===
 entries.sort()
 
-# === README.md を生成 ===
-with open(README_PATH, "w", encoding="utf-8") as f:
-    f.write("# 「徒然スキーヤー日記」のアーカイブ\n\nオリジナルは[こちら](https://blog.goo.ne.jp/tsakamot2001)\n\n\n\n")
+# === ARTICLES.md を生成 ===
+with open(OFNAME_PATH, "w", encoding="utf-8") as f:
+    f.write("## 記事一覧\n\n")
     for dt, title, filename in entries:
         f.write(f"- [{title}]({filename}) ({dt.strftime('%Y-%m-%d %H:%M')})\n")
 
-print(f"✅ README.md を作成しました: {README_PATH}")
+print(f"✅ ARTICLES.md を作成しました: {OFNAME_PATH}")
 
