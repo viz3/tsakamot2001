@@ -19,7 +19,7 @@ args = parser.parse_args()
 ARTICLE_URL = args.url
 
 # === 保存先 ===
-SAVE_DIR = "exported_blog"
+SAVE_DIR = ".."
 IMAGE_DIR = os.path.join(SAVE_DIR, "images")
 os.makedirs(IMAGE_DIR, exist_ok=True)
 
