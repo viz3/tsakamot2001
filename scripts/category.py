@@ -1,16 +1,17 @@
 import os
 import re
+import fnmatch
 from datetime import datetime
 from collections import defaultdict
 
-EXPORT_DIR = "exported_blog"
+EXPORT_DIR = ".."
 
 # カテゴリID → (カテゴリ名, [(タイトル, ファイル名, 投稿日時)]) の辞書
 category_map = defaultdict(list)
 category_name_map = {}
 
 for filename in os.listdir(EXPORT_DIR):
-    if not filename.endswith(".md"):
+    if not fnmatch.fnmatch(filename, "e*.md"):
         continue
 
     path = os.path.join(EXPORT_DIR, filename)
@@ -63,7 +64,7 @@ print("✅ カテゴリリンク集を投稿日時順で作成しました！")
 category_path = os.path.join(EXPORT_DIR, "CATEGORY.md")
 
 with open(category_path, "w", encoding="utf-8") as f:
-    f.write("# 🗂️ カテゴリ一覧\n\n")
+    f.write("## カテゴリ一覧\n\n")
     # カテゴリ名の五十音順（またはアルファベット順）でソート
     for category_id, category_name in sorted(category_name_map.items(), key=lambda x: x[1]):
         f.write(f"- [{category_name}]({category_id}.md)\n")
