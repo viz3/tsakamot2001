@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>URL一括置換ツール</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    textarea { width: 100%; height: 150px; margin-bottom: 10px; }
+    button { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+<h2>URL一括置換ツール</h2>
+
+<p><strong>置換ルール（GitHub上の merged.txt）を自動読み込みします。</strong></p>
+
+<label>変換したいテキストを入力：</label><br>
+<textarea id="inputText" placeholder="ここにURLを含むテキストを入力..."></textarea>
+
+<button onclick="replaceUrls()">置換実行</button>
+
+<h3>結果：</h3>
+<textarea id="outputText" readonly></textarea>
+
+<script>
+  let mapping = {};
+
+  // GitHubのraw URLからmerged.txtを取得
+  const rawUrl = 'https://raw.githubusercontent.com/viz3/tsakamot2001/main/url_replacer/merged.txt';
+
+  fetch(rawUrl)
+    .then(response => {
+      if (!response.ok) throw new Error('読み込みに失敗しました');
+      return response.text();
+    })
+    .then(data => {
+      const lines = data.split('\n');
+      for (const line of lines) {
+        const [oldUrl, newUrl] = line.trim().split('\t');
+        if (oldUrl && newUrl) {
+          mapping[oldUrl] = newUrl;
+        }
+      }
+      console.log('置換ルールを読み込みました。');
+    })
+    .catch(error => {
+      alert('置換ルールの読み込みに失敗しました: ' + error.message);
+    });
+
+  function replaceUrls() {
+    let text = document.getElementById('inputText').value;
+
+    for (const [oldUrl, newUrl] of Object.entries(mapping)) {
+      const escapedUrl = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedUrl, 'g');
+      text = text.replace(regex, newUrl);
+    }
+
+    document.getElementById('outputText').value = text;
+  }
+</script>
+
+</body>
+</html>
+
