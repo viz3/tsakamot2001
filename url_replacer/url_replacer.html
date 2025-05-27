@@ -36,31 +36,48 @@
     })
     .then(data => {
       const lines = data.split('\n');
+      let count = 0;
       for (const line of lines) {
-        const [oldUrl, newUrl] = line.trim().split('\t');
+        const trimmedLine = line.trim();
+        if (!trimmedLine || !trimmedLine.includes('\t')) continue;
+
+        const [oldUrl, newUrl] = trimmedLine.split('\t');
         if (oldUrl && newUrl) {
-          mapping[oldUrl] = newUrl;
+          mapping[oldUrl.trim()] = newUrl.trim();
+          count++;
         }
       }
-      console.log('置換ルールを読み込みました。');
+      console.log(`置換ルールを ${count} 件読み込みました。`);
     })
     .catch(error => {
       alert('置換ルールの読み込みに失敗しました: ' + error.message);
     });
 
+  // 正規表現のエスケープ関数
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   function replaceUrls() {
     let text = document.getElementById('inputText').value;
 
+    // 1. http:// を https:// に変換
+    text = text.replace(/http:\/\//g, 'https://');
+
+    // 2. URL置換
+    let replaced = 0;
     for (const [oldUrl, newUrl] of Object.entries(mapping)) {
-      const escapedUrl = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedUrl, 'g');
-      text = text.replace(regex, newUrl);
+      const regex = new RegExp(escapeRegExp(oldUrl), 'g');
+      if (regex.test(text)) {
+        text = text.replace(regex, newUrl);
+        replaced++;
+      }
     }
 
     document.getElementById('outputText').value = text;
+    console.log(`置換を ${replaced} 件実行しました。`);
   }
 </script>
 
 </body>
 </html>
-
